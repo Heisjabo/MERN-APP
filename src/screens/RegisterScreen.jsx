@@ -1,36 +1,36 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import FormContainer from "../components/FormContainer.jsx";
+import { userSchema } from "../validations/userValidation.jsx";
 import { useForm } from "react-hook-form";
-import { axiosClient } from "../helpers/client.js";
+import { yupResolver } from "@hookform/resolvers/yup";
+import axios from "axios";
+import { toast } from "react-toastify";
+
+const REGISTER_URL = "https://blogapi-se2j.onrender.com/api/v1/users"
 
 const RegisterScreen = () => {
-
   const [loading, setLoading] = useState(false);
+  const { register, handleSubmit, formState: { errors }} = useForm({
+    resolver: yupResolver(userSchema)
+  });
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-    formState: { errors },
-  } = useForm();
+  const notify = () => toast('user was registered successfully')
+
+  const navigate = useNavigate();
 
   const onSubmit = async (data) => {
-    const formData = new FormData();
-    formData.append("name", data.name);
-    formData.append("email", data.email);
-    formData.append("password", data.password);
-
-    try{
+    try {
       setLoading(true);
-      const response = await axiosClient.post("/api/users/", formData);
+      const response = await axios.post(REGISTER_URL, data);
       setLoading(false);
-      alert("Success! user was created");
-    } catch(error){
-      console.log(error);
-      setLoading(false);
+      notify();
+      navigate('/');
+    } catch(err){
+      setLoading(false)
+      console.log(err);
     }
-  };
+  }
 
   return (
     <FormContainer>
@@ -41,10 +41,10 @@ const RegisterScreen = () => {
           <input
             type="text"
             placeholder="Enter Name"
-            className="bg-transparent border border-[#b0b3b8]
-            rounded-[5px] px-2 py-1 outline-none"
-            {...register("name")}
+            {...register('username')}
+            className={`bg-transparent rounded-[5px] px-2 py-1 outline-none ${ errors.username ? 'border border-red-500' : 'border border-[#b0b3b8]' }`}
           />
+          {errors.username && <span className="text-red-500">{errors.username.message}</span>}
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-slate-900 text-[16px] font-[500]">
@@ -53,10 +53,10 @@ const RegisterScreen = () => {
           <input
             type="email"
             placeholder="Enter Email"
-            className="bg-transparent border border-[#b0b3b8]
-            rounded-[5px] px-2 py-1 outline-none"
-            {...register("email")}
+            {...register('email')}
+            className={`bg-transparent rounded-[5px] px-2 py-1 outline-none ${ errors.email ? 'border border-red-500' : 'border border-[#b0b3b8]' }`}
           />
+          {errors.email && <span className="text-red-500">{errors.email.message}</span>}
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-slate-900 text-[16px] font-[500]">
@@ -65,10 +65,10 @@ const RegisterScreen = () => {
           <input
             type="password"
             placeholder="Enter Password"
-            className="bg-transparent border border-[#b0b3b8]
-            rounded-[5px] px-2 py-1 outline-none"
-            {...register("password")}
+            {...register('password')}
+            className={`bg-transparent rounded-[5px] px-2 py-1 outline-none ${ errors.password ? 'border border-red-500' : 'border border-[#b0b3b8]' }`}
           />
+          {errors.password && <span className="text-red-500">{errors.password.message}</span>}
         </div>
         <div className="flex flex-col gap-2">
           <label className="text-slate-900 text-[16px] font-[500]">
@@ -77,13 +77,13 @@ const RegisterScreen = () => {
           <input
             type="password"
             placeholder="Enter Password"
-            className="bg-transparent border border-[#b0b3b8]
-            rounded-[5px] px-2 py-1 outline-none"
-            {...register("confirmPassword")}
+            {...register('confirmPassword')}
+            className={`bg-transparent rounded-[5px] px-2 py-1 outline-none ${ errors.confirmPassword ? 'border border-red-500' : 'border border-[#b0b3b8]' }`}
           />
+          {errors.confirmPassword && <span className="text-red-500">{errors.confirmPassword.message}</span>}
         </div>
         <button className="bg-slate-900 flex-shrink-0 rounded-[8px] text-white p-1 mt-5">
-         {loading? "Loading..." : "signup"}
+         {loading ? 'loading...' : 'Sign Up'}
         </button>
         <p className="text-slate-900 font-[400]">
           Already have an account?{" "}
